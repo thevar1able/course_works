@@ -1,6 +1,0 @@
-test: main
-	./main
-main: main.c main.h game.c graphic.c
-	gcc -std=c99 -Wmissing-prototypes -Wstrict-prototypes -O2 -lSDL -lSDL_image -lSDL_ttf main.c game.c graphic.c -o main
-clean:
-	rm main
