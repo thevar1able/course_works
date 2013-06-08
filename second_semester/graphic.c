@@ -227,7 +227,7 @@ void loopGame(struct graphic* graphics, int players)
                                     curGame->field[insertPos.y][insertPos.x] = insChar[0];
                                     drawRect(graphics->screen, 195, 345, 410, 60, 0);
                                     shouldClean = 0;
-                                    curGame->nextMove = !curGame->nextMove;
+                                    if(!players)curGame->nextMove = !curGame->nextMove;
                                     pushWordToUsed(curGame, tmpStr);
                                 }
                                 break;
@@ -255,7 +255,7 @@ void loopGame(struct graphic* graphics, int players)
                                             curGame->field[insertPos.y][insertPos.x] = insChar[0];
                                             drawRect(graphics->screen, 195, 345, 410, 60, 0);
                                             shouldClean = 0;
-                                            curGame->nextMove = !curGame->nextMove;
+                                            if(!players)curGame->nextMove = !curGame->nextMove;
                                             pushWordToUsed(curGame, tmpStr);
                                             writeToUserDictionary(tmpStr);
                                         }
@@ -269,6 +269,15 @@ void loopGame(struct graphic* graphics, int players)
                         tmpStr[0] = L'\0';
                         insChar[0] = L'\0';
                         moveState = 5;
+
+                        if(players && !shouldClean)
+                        {
+                            int computerScores = computerMove(curGame);
+                            if(computerScores)
+                            {
+                                curGame->score[1] += computerScores;
+                            }
+                        }
 
                         if(shouldClean)
                         {
@@ -311,6 +320,7 @@ void loopGame(struct graphic* graphics, int players)
                     case SDLK_DOWN: graphics->selCell.y++; break;
                     case SDLK_LEFT: graphics->selCell.x--; break;
                     case SDLK_RIGHT: graphics->selCell.x++; break;
+                    case SDLK_BACKSPACE: computerMove(curGame); break;
                     case SDLK_ESCAPE: moveState = 0; acceptMove = 0; tmpStr[0] = L'\0'; insChar[0] = L'\0'; break;
                     case SDLK_RETURN:
                         if(moveState == 0)

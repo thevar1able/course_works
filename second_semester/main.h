@@ -8,8 +8,11 @@
 #include <SDL/SDL_ttf.h>
 #include <SDL/SDL_image.h>
 
+#define __DEBUG__ 0
+
 #define true 1
 #define false 0
+
 #define G_MAIN 1
 #define G_SETTINGS 2
 #define G_STARTING 3 
@@ -34,12 +37,18 @@ struct game
 {
 	wchar_t field[7][7];
 	int markField[7][7];
-	wchar_t* usedDictionary[100];
+	wchar_t usedDictionary[100][30];
 	int difficulty;
 	int isAuto;
 	int nextMove;
 	int fieldSize;
 	int score[1];
+};
+
+struct wordGuess
+{
+	wchar_t word[30];
+	struct point pos;
 };
 
 int main(void);
@@ -58,7 +67,11 @@ int gameLoop(struct game*);
 void writeToUserDictionary(wchar_t*);
 void pushWordToUsed(struct game*, wchar_t*);
 int wasWordPlayed(struct game*, wchar_t*);
+int checkIfSubstring(wchar_t*, wchar_t*);
 int computerMove(struct game*);
+struct point simpleWordCheck(struct game*, wchar_t*, struct point);
+struct point recursiveWordCheck(struct game*, wchar_t*, struct point);
+void strrev(wchar_t*);
 
 void drawField1(struct game*);
 void startRender(struct graphic*);
