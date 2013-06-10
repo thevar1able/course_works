@@ -272,7 +272,7 @@ void loopGame(struct graphic* graphics, int players)
 
                         if(players && !shouldClean)
                         {
-                            int computerScores = computerMove(curGame);
+                            int computerScores = computerMove(curGame, 0);
                             if(computerScores)
                             {
                                 curGame->score[1] += computerScores;
@@ -320,7 +320,7 @@ void loopGame(struct graphic* graphics, int players)
                     case SDLK_DOWN: graphics->selCell.y++; break;
                     case SDLK_LEFT: graphics->selCell.x--; break;
                     case SDLK_RIGHT: graphics->selCell.x++; break;
-                    case SDLK_BACKSPACE: computerMove(curGame); break;
+                    case SDLK_BACKSPACE: computerMove(curGame, 0); break;
                     case SDLK_ESCAPE: moveState = 0; acceptMove = 0; tmpStr[0] = L'\0'; insChar[0] = L'\0'; break;
                     case SDLK_RETURN:
                         if(moveState == 0)

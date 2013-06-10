@@ -47,6 +47,7 @@ void fillFirstWord(struct game* curGame)
 		// 	curGame->field[(curGame->fieldSize / 2) + 1][i] = firstWord[i];
 		// }
 		pushWordToUsed(curGame, firstWord);
+		printf("%i&%i\n", wcslen(firstWord), wcslen(firstWord + sizeof(char)));
 	}
 }
 
@@ -194,7 +195,7 @@ wchar_t** findWordsInGame(struct game* curGame, struct point p, int shouldCheck)
 	wchar_t** foundWords;
 	if(shouldCheck)foundWords = checkCombos(foundCombos, 1); else return foundCombos;
 
-	for(i = 0; i < 150; ++i)free(foundCombos[i]);
+	for(i = 0; i < 200; ++i)free(foundCombos[i]);
 
 	for(i = 0; wcscmp(foundWords[i], L""); ++i); //printf("%ls\n", foundWords[i]);
 	//printf("Words found: %i\n", i);
@@ -338,7 +339,7 @@ int gameLoop(struct game* curGame)
 	int x, y, x1, y1;
 	wchar_t* tempChar = (wchar_t*)malloc(sizeof(wchar_t)*30);
 	wchar_t insertChar;
-	computerMove(curGame);
+	computerMove(curGame, 0);
 	// while(1)
 	// {
 	// 	printf("StartPos: \n");
@@ -428,37 +429,75 @@ void strrev(wchar_t *p)
 }
 
 
-int computerMove(struct game* curGame)
+int computerMove(struct game* curGame, int reverse)
 {
 	struct wordGuess guessArray[150];
 	struct wordGuess suggests[10];
+	for (int i = 0; i < 10; ++i) suggests[i].word[0] = L'\0';
 	int pos = 0;
 	int max_len = 0;
 	int max_pos = 0;
 	wchar_t** words;
 
-	for (int i = 0; i < curGame->fieldSize; ++i)
+	if(reverse)
 	{
-		for (int j = 0; j < curGame->fieldSize; ++j)
+		for (int i = curGame->fieldSize; i >= 0; --i)
 		{
-			if(curGame->field[i][j] == L' ')
+			for (int j = curGame->fieldSize; j >= 0; --j)
 			{
-				if( curGame->field[i][j + 1] != L' ' || 
-					curGame->field[i][j - 1] != L' ' ||
-					curGame->field[i + 1][j] != L' ' ||
-					curGame->field[i - 1][j] != L' ' )
+				if(curGame->field[i][j] == L' ')
 				{
-					words = findWordsInGame(curGame, makePoint(i, j), 0);
-					words = checkCombos(words, 0);
-					for (int l = 0; wcscmp(words[l], L""); ++l)
+					if( (curGame->field[i][j + 1] != L' ' && (j + 1 < curGame->fieldSize)) || 
+						(curGame->field[i][j - 1] != L' ' && (j - 1 >= 0)) ||
+						(curGame->field[i + 1][j] != L' ' && (i + 1 < curGame->fieldSize)) ||
+						(curGame->field[i - 1][j] != L' ' && (i - 1 >= 0)) )
 					{
-						if(!wasWordPlayed(curGame, words[l]) &&
-							checkIfSubstring(curGame->usedDictionary[0], words[l]))
+						words = findWordsInGame(curGame, makePoint(i, j), 0);
+						words = checkCombos(words, 0);
+						for (int l = 0; wcscmp(words[l], L""); ++l)
 						{
-							wcscpy(guessArray[pos].word, words[l]);
-							guessArray[pos].pos = makePoint(j, i);
-							pos++;
+							if(!wasWordPlayed(curGame, words[l]) &&
+								checkIfSubstring(curGame->usedDictionary[0], words[l]))
+							{
+								wcscpy(guessArray[pos].word, words[l]);
+								guessArray[pos].pos = makePoint(j, i);
+								pos++;
+							}
+							free(words[l]);
 						}
+						free(words);
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < curGame->fieldSize; ++i)
+		{
+			for (int j = 0; j < curGame->fieldSize; ++j)
+			{
+				if(curGame->field[i][j] == L' ')
+				{
+					if( (curGame->field[i][j + 1] != L' ' && (j + 1 < curGame->fieldSize)) || 
+						(curGame->field[i][j - 1] != L' ' && (j - 1 >= 0)) ||
+						(curGame->field[i + 1][j] != L' ' && (i + 1 < curGame->fieldSize)) ||
+						(curGame->field[i - 1][j] != L' ' && (i - 1 >= 0)) )
+					{
+						words = findWordsInGame(curGame, makePoint(i, j), 0);
+						words = checkCombos(words, 0);
+						for (int l = 0; wcscmp(words[l], L""); ++l)
+						{
+							if(!wasWordPlayed(curGame, words[l]) &&
+								checkIfSubstring(curGame->usedDictionary[0], words[l]))
+							{
+								wcscpy(guessArray[pos].word, words[l]);
+								guessArray[pos].pos = makePoint(j, i);
+								pos++;
+							}
+							free(words[l]);
+						}
+						free(words);
 					}
 				}
 			}
@@ -487,23 +526,25 @@ int computerMove(struct game* curGame)
 	}
 
 	int i;
-	struct point tempPoint;
-	for (i = 0; i < max_pos + 1; ++i)
+	struct point tempPoint = makePoint(-1, -1);
+	for (i = 0; wcscmp(suggests[i].word, L"") && i < 10; ++i)
 	{
+		printf("%i\n", wcslen(suggests[i].word));
 		printf("Предлагаемое слово - %ls\n", suggests[i].word);
 		tempPoint = simpleWordCheck(curGame, suggests[i].word, suggests[i].pos);
 		printf("Пробуем простой алгоритм\n");
 		if(tempPoint.x >= 0)
 		{
-			printf("Найдена клетка для подстановки\n");
+			printf("Найдена клетка для подстановки, %i,%i\n", tempPoint.y, tempPoint.x);
 			curGame->field[tempPoint.y][tempPoint.x] = suggests[i].word[0];
 			break;
 		}
 		else
 		{
 			printf("Смена алгоритма\n");
-			tempPoint = recursiveWordCheck(curGame, suggests[i].word, suggests[i].pos);
-			if(tempPoint.x >= 0)
+			printf("dbg_before: %i, %i\n", tempPoint.y, tempPoint.x);
+			tempPoint = recursiveWordCheck_new(curGame, suggests[i].word, suggests[i].pos);
+			if(tempPoint.x >= 0 && tempPoint.x < curGame->fieldSize && curGame->field[tempPoint.y][tempPoint.x] == L' ')
 			{
 				printf("Найдена клетка для подстановки\n");
 				printf("%i %i\n", tempPoint.x, tempPoint.y);
@@ -512,61 +553,96 @@ int computerMove(struct game* curGame)
 			}
 			else
 			{
-				//try again
+				printf("Увы :(, (dbg: %i, %i)\n", tempPoint.y, tempPoint.x);
 			}
 		}
 	}
-
+	drawField1(curGame);
 	if(tempPoint.x >= 0)
 	{
 		pushWordToUsed(curGame, suggests[i].word);
 		return wcslen(suggests[i].word);
 	}
-	else return 0;
+	else 
+	{
+		printf("Всё очень плохо :(\n");
+		if(!reverse)computerMove(curGame, !reverse); else return 0;
+	}
 }
 
 struct point simpleWordCheck(struct game* curGame, wchar_t* word, struct point pos)
 {
-	if(curGame->field[pos.y][pos.x] == L' ' && 
-		(   curGame->field[pos.y][pos.x + 1] == word[1] || 
-			curGame->field[pos.y][pos.x - 1] == word[1] ||
-			curGame->field[pos.y + 1][pos.x] == word[1] ||
-			curGame->field[pos.y - 1][pos.x] == word[1]  ))
+	if(curGame->field[pos.y][pos.x] == L' ' && pos.x >= 0 && pos.x < curGame->fieldSize && pos.y < curGame->fieldSize && pos.y >= 0 &&
+		(   (curGame->field[pos.y][pos.x + 1] == word[1] && (pos.x + 1 < curGame->fieldSize)) || 
+			(curGame->field[pos.y][pos.x - 1] == word[1] && (pos.x - 1 >= 0)) ||
+			(curGame->field[pos.y + 1][pos.x] == word[1] && (pos.y + 1 < curGame->fieldSize)) ||
+			(curGame->field[pos.y - 1][pos.x] == word[1] && (pos.y - 1 >= 0))  ))
 	{
 		return pos;
 	}
 	return makePoint(-1, -1);
 }
 
-struct point recursiveWordCheck(struct game* curGame, wchar_t* word, struct point pos)
+struct point recursiveWordCheck_new(struct game* curGame, wchar_t* word, struct point pos)
 {
-	struct point tempPoint = makePoint(pos.x, pos.y);
-	struct point prevPos = makePoint(pos.x, pos.y);
-
-	printf("%lc\n", curGame->field[pos.y][pos.x]);
-	for (int i = 0; i < wcslen(word) - 1; ++i)
+	struct point tempPoint;
+	struct point p[4];
+	int p_pos = 0;
+	printf("iteration\n");
+	if(wcslen(word) > 1)printf("looking for %lc in %i,%i\n", word[0], pos.y, pos.x); else if(wcslen(word) == 1) printf("looking for empty cell in %i, %i\n", pos.y, pos.x);
+	if(wcslen(word) > 1)
 	{
-		prevPos = pos;
-		pos = tempPoint;
-		// printf("iteration\n");
-		// printf("looking for %lc\n", word[i]);
-		if(curGame->field[tempPoint.y][tempPoint.x + 1] == word[i] && (tempPoint.x + 1 < curGame->fieldSize)) tempPoint = makePoint(tempPoint.x + 1, tempPoint.y);
-		else if (curGame->field[tempPoint.y][tempPoint.x - 1] == word[i] && (tempPoint.x - 1 >= 0)) tempPoint = makePoint(tempPoint.x - 1, tempPoint.y);
-		else if (curGame->field[tempPoint.y + 1][tempPoint.x] == word[i] && (tempPoint.y + 1 < curGame->fieldSize)) tempPoint = makePoint(tempPoint.x, tempPoint.y + 1);
-		else if (curGame->field[tempPoint.y - 1][tempPoint.x] == word[i] && (tempPoint.y - 1 >= 0)) tempPoint = makePoint(tempPoint.x, tempPoint.y - 1);
-		if(tempPoint.x == pos.x && tempPoint.y == pos.y) 
-		{
-			if(curGame->field[tempPoint.y][tempPoint.x - 1] == word[i] && (tempPoint.x - 1 >= 0)) tempPoint = makePoint(tempPoint.x + 1, tempPoint.y);
-			else if (curGame->field[tempPoint.y][tempPoint.x + 1] == word[i] && (tempPoint.x + 1 < curGame->fieldSize)) tempPoint = makePoint(tempPoint.x - 1, tempPoint.y);
-			else if (curGame->field[tempPoint.y - 1][tempPoint.x] == word[i] && (tempPoint.y - 1 >= 0)) tempPoint = makePoint(tempPoint.x, tempPoint.y - 1);
-			else if (curGame->field[tempPoint.y + 1][tempPoint.x] == word[i] && (tempPoint.y + 1 < curGame->fieldSize)) tempPoint = makePoint(tempPoint.x, tempPoint.y + 1);
+		if(curGame->field[pos.y][pos.x + 1] == word[0] && (pos.x + 1 < curGame->fieldSize))
+		{ 
+			printf("%lc\n", word[0]);
+			p[p_pos] = makePoint(pos.x + 1, pos.y);
+			p_pos++;
 		}
-		if(tempPoint.x == pos.x && tempPoint.y == pos.y) return makePoint(-1, -1);
-		if(tempPoint.x == prevPos.x && tempPoint.y == prevPos.y) return makePoint(-1, -1);
+		if (curGame->field[pos.y][pos.x - 1] == word[0] && (pos.x - 1 >= 0)) 
+		{
+			printf("%lc\n", word[0]);
+			p[p_pos] = makePoint(pos.x - 1, pos.y);
+			p_pos++;
+		}
+		if (curGame->field[pos.y + 1][pos.x] == word[0] && (pos.y + 1 < curGame->fieldSize)) 
+		{
+			printf("%lc\n", word[0]);
+			p[p_pos] = makePoint(pos.x, pos.y + 1);
+			p_pos++;
+		}
+		if (curGame->field[pos.y - 1][pos.x] == word[0] && (pos.y - 1 >= 0)) 
+		{
+			printf("%lc\n", word[0]);
+			p[p_pos] = makePoint(pos.x, pos.y - 1);
+			p_pos++;
+		}
+
+		if(p_pos > 1)
+		{
+			for (int i = 0; i < p_pos; ++i)
+			{
+				tempPoint = recursiveWordCheck_new(curGame, word + sizeof(char), p[i]);
+				printf("dbg: %i, %i\n", tempPoint.y, tempPoint.x);
+				if(tempPoint.x != -1) { return tempPoint; break; }
+			}
+		}
+		else if(p_pos == 1)
+		{
+			return recursiveWordCheck_new(curGame, word + sizeof(char), p[0]);
+		}
+		else
+		{
+			return makePoint(-1, -1);
+		}
 	}
-	if(curGame->field[tempPoint.y][tempPoint.x + 1] == L' ') return makePoint(tempPoint.x + 1, tempPoint.y);
-	if(curGame->field[tempPoint.y][tempPoint.x - 1] == L' ') return makePoint(tempPoint.x - 1, tempPoint.y);
-	if(curGame->field[tempPoint.y + 1][tempPoint.x] == L' ') return makePoint(tempPoint.x, tempPoint.y + 1);
-	if(curGame->field[tempPoint.y - 1][tempPoint.x] == L' ') return makePoint(tempPoint.x, tempPoint.y - 1);
-	return makePoint(-1, -1);
+
+	if(wcslen(word) == 1)
+	{
+		if(curGame->field[pos.y][pos.x + 1] == L' ' && (pos.x + 1 < curGame->fieldSize)) return makePoint(pos.x + 1, pos.y);
+		if(curGame->field[pos.y][pos.x - 1] == L' ' && (pos.x - 1 >= 0)) return makePoint(pos.x - 1, pos.y);
+		if(curGame->field[pos.y + 1][pos.x] == L' ' && (pos.y + 1 < curGame->fieldSize)) return makePoint(pos.x, pos.y + 1);
+		if(curGame->field[pos.y - 1][pos.x] == L' ' && (pos.y - 1 >= 0)) return makePoint(pos.x, pos.y - 1);
+		printf("no empty cell\n");
+		return makePoint(-1, -1);
+	}
 }

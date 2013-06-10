@@ -68,9 +68,10 @@ void writeToUserDictionary(wchar_t*);
 void pushWordToUsed(struct game*, wchar_t*);
 int wasWordPlayed(struct game*, wchar_t*);
 int checkIfSubstring(wchar_t*, wchar_t*);
-int computerMove(struct game*);
+int computerMove(struct game*, int);
 struct point simpleWordCheck(struct game*, wchar_t*, struct point);
 struct point recursiveWordCheck(struct game*, wchar_t*, struct point);
+struct point recursiveWordCheck_new(struct game*, wchar_t*, struct point);
 void strrev(wchar_t*);
 
 void drawField1(struct game*);
