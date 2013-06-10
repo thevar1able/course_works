@@ -54,7 +54,7 @@ void loopMenu(struct graphic* graphics)
                 case SDLK_UP: highlight--; break;
                 case SDLK_DOWN: highlight++; break;
                 case SDLK_RETURN: 
-                    if(highlight == 0) loopStartDialog(graphics);
+                    if(highlight == 0) { loopStartDialog(graphics); drawRect(graphics->screen, 0, 0, 800, 600, 0); drawHeader(graphics->screen); }
                     if(highlight == 1) loopSettings(graphics);
                     if(highlight == 2) return;
             }
@@ -113,7 +113,7 @@ void loopStartDialog(struct graphic* graphics)
                 case SDLK_ESCAPE: drawRect(graphics->screen, 155, 345, 490, 60, 0); return; break;
                 case SDLK_LEFT: players--; break;
                 case SDLK_RIGHT: players++; break;
-                case SDLK_RETURN: loopGame(graphics, players); drawHeader(graphics->screen); break;
+                case SDLK_RETURN: loopGame(graphics, players); drawHeader(graphics->screen); return; break;
             }
             players = players > 0 ? 1 : players < 0 ? 0 : players;
         }
@@ -127,6 +127,7 @@ void loopGame(struct graphic* graphics, int players)
     SDL_Event event;
     int moveState = 0;
     int acceptMove = 0;
+    int escCounter = 0;
     struct point startPos, insertPos;
     wchar_t* tmpStr = (wchar_t*)malloc(sizeof(wchar_t)*50); tmpStr[0] = L'\0';
     wchar_t* pushStr = (wchar_t*)malloc(sizeof(wchar_t)*50);
@@ -272,10 +273,31 @@ void loopGame(struct graphic* graphics, int players)
 
                         if(players && !shouldClean)
                         {
-                            int computerScores = computerMove(curGame, 0);
-                            if(computerScores)
+                            if(!checkEndGame)
                             {
-                                curGame->score[1] += computerScores;
+                                int computerScores = computerMove(curGame, 0);
+                                if(computerScores)
+                                {
+                                    curGame->score[1] += computerScores;
+                                }
+                                else
+                                {
+                                    printf("Компьютер сдался =\\ \n");
+                                    loopWhoWon(curGame, graphics, 2);
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                loopWhoWon(curGame, graphics, curGame->score[0] > curGame->score[1] ? 2 : 1);
+                                return;
+                            }
+                        }
+                        else if(!shouldClean)
+                        {
+                            if(checkEndGame(curGame))
+                            {
+                                loopWhoWon(curGame, graphics, curGame->score[0] > curGame->score[1] ? 1 : 0);
                             }
                         }
 
@@ -316,12 +338,21 @@ void loopGame(struct graphic* graphics, int players)
             {
                 switch(event.key.keysym.sym)
                 {
-                    case SDLK_UP: graphics->selCell.y--; break;
-                    case SDLK_DOWN: graphics->selCell.y++; break;
-                    case SDLK_LEFT: graphics->selCell.x--; break;
-                    case SDLK_RIGHT: graphics->selCell.x++; break;
+                    case SDLK_UP: graphics->selCell.y--; escCounter = 0; break;
+                    case SDLK_DOWN: graphics->selCell.y++; escCounter = 0; break;
+                    case SDLK_LEFT: graphics->selCell.x--; escCounter = 0; break;
+                    case SDLK_RIGHT: graphics->selCell.x++; escCounter = 0; break;
                     case SDLK_BACKSPACE: computerMove(curGame, 0); break;
-                    case SDLK_ESCAPE: moveState = 0; acceptMove = 0; tmpStr[0] = L'\0'; insChar[0] = L'\0'; break;
+                    case SDLK_ESCAPE: moveState = 0; acceptMove = 0; tmpStr[0] = L'\0'; insChar[0] = L'\0'; escCounter++;
+                                if(escCounter == 2)
+                                {
+                                    if(loopGiveUp(curGame, graphics))
+                                    {
+                                        loopWhoWon(curGame, graphics, curGame->isAuto ? 1 : curGame->nextMove);
+                                        return;
+                                    }
+                                } 
+                            break;
                     case SDLK_RETURN:
                         if(moveState == 0)
                         {
@@ -371,6 +402,61 @@ void loopGame(struct graphic* graphics, int players)
     }
 
     return;
+}
+
+int checkEndGame(struct game* curGame)
+{
+    for (int i = 0; i < curGame->fieldSize; ++i)
+    {
+        for (int j = 0; j < curGame->fieldSize; ++j)
+        {
+            if(curGame->field[i][j] == L' ')return 0;
+        }
+    }
+    return 1;
+}
+
+int loopGiveUp(struct game* curGame, struct graphic* graphics)
+{
+    SDL_Event event;
+
+    drawReadAnythingDialog(graphics, L"Сдаться?");
+    SDL_Flip(graphics->screen);
+
+    for(;;)
+    {
+        SDL_WaitEvent(&event);
+        if(event.type == SDL_KEYDOWN)
+        {
+            switch(event.key.keysym.sym)
+            {
+                case SDLK_RETURN: return 1; break;
+                case SDLK_ESCAPE: return 0; break;
+            }
+        }
+    } 
+}
+
+void loopWhoWon(struct game* curGame, struct graphic* graphics, int player)
+{
+    SDL_Event event;
+
+    drawReadAnythingDialog(graphics, player ? player == 2 ? L"Игрок выиграл" : curGame->isAuto ? L"Компьютер выиграл" : L"Игрок выиграл" : L"Второй игрок выиграл");
+
+    SDL_Flip(graphics->screen);
+
+    for(;;)
+    {
+        SDL_WaitEvent(&event);
+        if(event.type == SDL_KEYDOWN)
+        {
+            switch(event.key.keysym.sym)
+            {
+                case SDLK_RETURN:
+                case SDLK_ESCAPE: return; break;
+            }
+        }
+    }
 }
 
 int loopAddWord(struct graphic* graphics)

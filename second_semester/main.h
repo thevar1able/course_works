@@ -72,6 +72,9 @@ int computerMove(struct game*, int);
 struct point simpleWordCheck(struct game*, wchar_t*, struct point);
 struct point recursiveWordCheck(struct game*, wchar_t*, struct point);
 struct point recursiveWordCheck_new(struct game*, wchar_t*, struct point);
+int loopGiveUp(struct game*, struct graphic*);
+void loopWhoWon(struct game*, struct graphic*, int);
+int checkEndGame(struct game*);
 void strrev(wchar_t*);
 
 void drawField1(struct game*);

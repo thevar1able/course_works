@@ -9,8 +9,8 @@ struct game* initGame(int isAuto, int difficulty)
 
 	newGame->nextMove = 0;
 
-	newGame->score[0] = 700; 
-	newGame->score[1] = 800;
+	newGame->score[0] = 0; 
+	newGame->score[1] = 0;
 
 	for (int i = 0; i < 100; ++i)
 	{
@@ -69,6 +69,15 @@ wchar_t* findWordInDictionary(int len)
 				return tempStr;
 			}
 		}
+		while(fscanf(f, "%ls\n", tempStr) != EOF)
+		{
+			if((wcslen(tempStr) == (unsigned int)len))
+			{
+				fclose(f);
+				printf("%ls\n", tempStr);
+				return tempStr;
+			}
+		}
 		fclose(f);
 		return NULL;
 	}
@@ -96,7 +105,7 @@ wchar_t** checkCombos(wchar_t** combos, int strict)
 
 	if(f)
 	{
-		wchar_t* tempStr = (wchar_t*)malloc(sizeof(wchar_t)*20);
+		wchar_t tempStr[20];
 		if(strict)
 		{
 			while(fscanf(f, "%ls\n", tempStr) != EOF)
@@ -167,7 +176,7 @@ wchar_t** findWordsInGame(struct game* curGame, struct point p, int shouldCheck)
 {
 	int i;
 	wchar_t** foundCombos = (wchar_t**)malloc(sizeof(wchar_t*) * 200);
-	for(i = 0; i < 200; ++i)
+	for(int i = 0; i < 200; ++i)
 	{
 		foundCombos[i] = (wchar_t*)malloc(sizeof(wchar_t) * 40);
 		foundCombos[i][0] = L'\0';
@@ -195,7 +204,7 @@ wchar_t** findWordsInGame(struct game* curGame, struct point p, int shouldCheck)
 	wchar_t** foundWords;
 	if(shouldCheck)foundWords = checkCombos(foundCombos, 1); else return foundCombos;
 
-	for(i = 0; i < 200; ++i)free(foundCombos[i]);
+	//for(i = 0; i < 200; ++i)free(foundCombos[i]);
 
 	for(i = 0; wcscmp(foundWords[i], L""); ++i); //printf("%ls\n", foundWords[i]);
 	//printf("Words found: %i\n", i);
@@ -463,9 +472,9 @@ int computerMove(struct game* curGame, int reverse)
 								guessArray[pos].pos = makePoint(j, i);
 								pos++;
 							}
-							free(words[l]);
+							//free(words[l]);
 						}
-						free(words);
+						//free(words);
 					}
 				}
 			}
@@ -495,9 +504,9 @@ int computerMove(struct game* curGame, int reverse)
 								guessArray[pos].pos = makePoint(j, i);
 								pos++;
 							}
-							free(words[l]);
+							//free(words[l]);
 						}
-						free(words);
+						//free(words);
 					}
 				}
 			}
