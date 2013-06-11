@@ -316,6 +316,7 @@ struct point* findClosestPoints(struct point p, struct game* curGame)
 {
 	int s = 0;
 	struct point* points = (struct point*)malloc(sizeof(struct point) * 5);
+	// if(!points)return makePoint(-1, -1);
 
 	if((p.x - 1 > -1) && (curGame->field[p.x - 1][p.y] != ' ') && (!curGame->markField[p.x - 1][p.y])) 
 	{
@@ -551,9 +552,13 @@ int computerMove(struct game* curGame, int reverse)
 		else
 		{
 			printf("Смена алгоритма\n");
-			printf("dbg_before: %i, %i\n", tempPoint.y, tempPoint.x);
+			// printf("dbg_before: %i, %i\n", tempPoint.y, tempPoint.x);
 			tempPoint = recursiveWordCheck_new(curGame, suggests[i].word, suggests[i].pos);
-			if(tempPoint.x >= 0 && tempPoint.x < curGame->fieldSize && curGame->field[tempPoint.y][tempPoint.x] == L' ')
+			if(tempPoint.x >= 0 && tempPoint.x < curGame->fieldSize && curGame->field[tempPoint.y][tempPoint.x] == L' ' &&
+				((curGame->field[tempPoint.y - 1][tempPoint.x] == suggests[i].word[wcslen(suggests[i].word) - 2] && tempPoint.y >= 0) ||
+				(curGame->field[tempPoint.y + 1][tempPoint.x] == suggests[i].word[wcslen(suggests[i].word) - 2] && tempPoint.y < curGame->fieldSize) ||
+				(curGame->field[tempPoint.y][tempPoint.x - 1] == suggests[i].word[wcslen(suggests[i].word) - 2] && tempPoint.x >= 0) ||
+				(curGame->field[tempPoint.y][tempPoint.x + 1] == suggests[i].word[wcslen(suggests[i].word) - 2] && tempPoint.x < curGame->fieldSize)))
 			{
 				printf("Найдена клетка для подстановки\n");
 				printf("%i %i\n", tempPoint.x, tempPoint.y);
@@ -562,11 +567,11 @@ int computerMove(struct game* curGame, int reverse)
 			}
 			else
 			{
-				printf("Увы :(, (dbg: %i, %i)\n", tempPoint.y, tempPoint.x);
+				// printf("Увы :(, (dbg: %i, %i)\n", tempPoint.y, tempPoint.x);
 			}
 		}
 	}
-	drawField1(curGame);
+	// drawField1(curGame);
 	if(tempPoint.x >= 0)
 	{
 		pushWordToUsed(curGame, suggests[i].word);
@@ -597,31 +602,31 @@ struct point recursiveWordCheck_new(struct game* curGame, wchar_t* word, struct 
 	struct point tempPoint;
 	struct point p[4];
 	int p_pos = 0;
-	printf("iteration\n");
-	if(wcslen(word) > 1)printf("looking for %lc in %i,%i\n", word[0], pos.y, pos.x); else if(wcslen(word) == 1) printf("looking for empty cell in %i, %i\n", pos.y, pos.x);
+	// printf("iteration\n");
+	// if(wcslen(word) > 1)printf("looking for %lc in %i,%i\n", word[0], pos.y, pos.x); else if(wcslen(word) == 1) printf("looking for empty cell in %i, %i\n", pos.y, pos.x);
 	if(wcslen(word) > 1)
 	{
 		if(curGame->field[pos.y][pos.x + 1] == word[0] && (pos.x + 1 < curGame->fieldSize))
 		{ 
-			printf("%lc\n", word[0]);
+			// printf("%lc\n", word[0]);
 			p[p_pos] = makePoint(pos.x + 1, pos.y);
 			p_pos++;
 		}
 		if (curGame->field[pos.y][pos.x - 1] == word[0] && (pos.x - 1 >= 0)) 
 		{
-			printf("%lc\n", word[0]);
+			// printf("%lc\n", word[0]);
 			p[p_pos] = makePoint(pos.x - 1, pos.y);
 			p_pos++;
 		}
 		if (curGame->field[pos.y + 1][pos.x] == word[0] && (pos.y + 1 < curGame->fieldSize)) 
 		{
-			printf("%lc\n", word[0]);
+			// printf("%lc\n", word[0]);
 			p[p_pos] = makePoint(pos.x, pos.y + 1);
 			p_pos++;
 		}
 		if (curGame->field[pos.y - 1][pos.x] == word[0] && (pos.y - 1 >= 0)) 
 		{
-			printf("%lc\n", word[0]);
+			// printf("%lc\n", word[0]);
 			p[p_pos] = makePoint(pos.x, pos.y - 1);
 			p_pos++;
 		}
@@ -631,7 +636,7 @@ struct point recursiveWordCheck_new(struct game* curGame, wchar_t* word, struct 
 			for (int i = 0; i < p_pos; ++i)
 			{
 				tempPoint = recursiveWordCheck_new(curGame, word + sizeof(char), p[i]);
-				printf("dbg: %i, %i\n", tempPoint.y, tempPoint.x);
+				// printf("dbg: %i, %i\n", tempPoint.y, tempPoint.x);
 				if(tempPoint.x != -1) { return tempPoint; break; }
 			}
 		}
@@ -651,7 +656,7 @@ struct point recursiveWordCheck_new(struct game* curGame, wchar_t* word, struct 
 		if(curGame->field[pos.y][pos.x - 1] == L' ' && (pos.x - 1 >= 0)) return makePoint(pos.x - 1, pos.y);
 		if(curGame->field[pos.y + 1][pos.x] == L' ' && (pos.y + 1 < curGame->fieldSize)) return makePoint(pos.x, pos.y + 1);
 		if(curGame->field[pos.y - 1][pos.x] == L' ' && (pos.y - 1 >= 0)) return makePoint(pos.x, pos.y - 1);
-		printf("no empty cell\n");
+		// printf("no empty cell\n");
 		return makePoint(-1, -1);
 	}
 }

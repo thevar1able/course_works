@@ -273,7 +273,7 @@ void loopGame(struct graphic* graphics, int players)
 
                         if(players && !shouldClean)
                         {
-                            if(!checkEndGame)
+                            if(!checkEndGame(curGame))
                             {
                                 int computerScores = computerMove(curGame, 0);
                                 if(computerScores)
