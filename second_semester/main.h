@@ -52,7 +52,6 @@ struct wordGuess
 };
 
 int main(void);
-struct game* fakeInit(void);
 
 struct game* initGame(int, int);
 void fillFirstWord(struct game*);
@@ -63,7 +62,6 @@ void BFS(struct game*, struct point*, int);
 wchar_t** findWordsInGame(struct game*, struct point, int);
 void BFSWalk(struct game*, struct point, wchar_t*, wchar_t**);
 wchar_t** checkCombos(wchar_t**, int);
-int gameLoop(struct game*);
 void writeToUserDictionary(wchar_t*);
 void pushWordToUsed(struct game*, wchar_t*);
 int wasWordPlayed(struct game*, wchar_t*);
@@ -71,13 +69,11 @@ int checkIfSubstring(wchar_t*, wchar_t*);
 int computerMove(struct game*, int);
 struct point simpleWordCheck(struct game*, wchar_t*, struct point);
 struct point recursiveWordCheck(struct game*, wchar_t*, struct point);
-struct point recursiveWordCheck_new(struct game*, wchar_t*, struct point);
 int loopGiveUp(struct game*, struct graphic*);
 void loopWhoWon(struct game*, struct graphic*, int);
 int checkEndGame(struct game*);
 void strrev(wchar_t*);
 
-void drawField1(struct game*);
 void startRender(struct graphic*);
 struct graphic* initGraphics(void);
 void drawRect(SDL_Surface*, int, int, int, int, int);

@@ -1,31 +1,5 @@
 #include "main.h"
 
-void drawField1(struct game* curGame)
-{
-	int i, j;
-	printf("\n");
-	for(j = 0; j < curGame->fieldSize; ++j)
-	{
-		printf("+");
-		for (i = 0; i < curGame->fieldSize; ++i)
-		{
-			printf("---+");
-		}
-		printf("\n|");
-		for (i = 0; i < curGame->fieldSize; ++i)
-		{
-			printf(" %1lc |", curGame->field[j][i]);
-		}
-		printf("\n");
-	}
-	printf("+");
-	for (i = 0; i < curGame->fieldSize; ++i)
-	{
-		printf("---+");
-	}
-	printf("\n");
-}
-
 void startRender(struct graphic* graphics)
 {
     loopMenu(graphics);

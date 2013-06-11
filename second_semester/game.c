@@ -42,10 +42,6 @@ void fillFirstWord(struct game* curGame)
 		{
 			curGame->field[curGame->fieldSize / 2][i] = firstWord[i];
 		}
-		// for(i = 0; i < curGame->fieldSize; ++i)
-		// {
-		// 	curGame->field[(curGame->fieldSize / 2) + 1][i] = firstWord[i];
-		// }
 		pushWordToUsed(curGame, firstWord);
 		printf("%i&%i\n", wcslen(firstWord), wcslen(firstWord + sizeof(char)));
 	}
@@ -344,45 +340,6 @@ struct point* findClosestPoints(struct point p, struct game* curGame)
 	return points;
 }
 
-int gameLoop(struct game* curGame)
-{
-	int x, y, x1, y1;
-	wchar_t* tempChar = (wchar_t*)malloc(sizeof(wchar_t)*30);
-	wchar_t insertChar;
-	computerMove(curGame, 0);
-	// while(1)
-	// {
-	// 	printf("StartPos: \n");
-	// 	scanf("%i %i", &x, &y);
-	// 	printf("Word: \n");
-	// 	scanf("\n%ls", tempChar);
-	// 	printf("InsertPos: \n");
-	// 	scanf("\n%i %i", &x1, &y1);
-	// 	printf("InsertChar:\n");
-	// 	scanf("\n%1lc", &curGame->field[x1][y1]);
-	// 	insertChar = curGame->field[x1][y1];
-	// 	wchar_t** words = findWordsInGame(curGame, makePoint(x, y), 0);
-
-	// 	for (int i = 0; wcscmp(words[i], L""); ++i)
-	// 	{
-	// 		if(!wcscmp(tempChar, words[i]))
-	// 		{
-	// 			printf("%i\n", tempChar[0] == words[i][0]);
-	// 			printf("Ок есть. +%i", wcslen(tempChar));
-	// 			curGame->field[x1][y1] = insertChar;
-	// 			computerMove(curGame);
-	// 			break;
-	// 		}
-	// 		else
-	// 		{
-	// 			curGame->field[x1][y1] = L' ';
-	// 		}
-	// 	}
-	// 	drawField1(curGame);
-
-	// }
-	return 0;
-}
 
 void writeToUserDictionary(wchar_t* str)
 {
@@ -553,7 +510,7 @@ int computerMove(struct game* curGame, int reverse)
 		{
 			printf("Смена алгоритма\n");
 			// printf("dbg_before: %i, %i\n", tempPoint.y, tempPoint.x);
-			tempPoint = recursiveWordCheck_new(curGame, suggests[i].word, suggests[i].pos);
+			tempPoint = recursiveWordCheck(curGame, suggests[i].word, suggests[i].pos);
 			if(tempPoint.x >= 0 && tempPoint.x < curGame->fieldSize && curGame->field[tempPoint.y][tempPoint.x] == L' ' &&
 				((curGame->field[tempPoint.y - 1][tempPoint.x] == suggests[i].word[wcslen(suggests[i].word) - 2] && tempPoint.y >= 0) ||
 				(curGame->field[tempPoint.y + 1][tempPoint.x] == suggests[i].word[wcslen(suggests[i].word) - 2] && tempPoint.y < curGame->fieldSize) ||
@@ -597,7 +554,7 @@ struct point simpleWordCheck(struct game* curGame, wchar_t* word, struct point p
 	return makePoint(-1, -1);
 }
 
-struct point recursiveWordCheck_new(struct game* curGame, wchar_t* word, struct point pos)
+struct point recursiveWordCheck(struct game* curGame, wchar_t* word, struct point pos)
 {
 	struct point tempPoint;
 	struct point p[4];
@@ -635,14 +592,14 @@ struct point recursiveWordCheck_new(struct game* curGame, wchar_t* word, struct 
 		{
 			for (int i = 0; i < p_pos; ++i)
 			{
-				tempPoint = recursiveWordCheck_new(curGame, word + sizeof(char), p[i]);
+				tempPoint = recursiveWordCheck(curGame, word + sizeof(char), p[i]);
 				// printf("dbg: %i, %i\n", tempPoint.y, tempPoint.x);
 				if(tempPoint.x != -1) { return tempPoint; break; }
 			}
 		}
 		else if(p_pos == 1)
 		{
-			return recursiveWordCheck_new(curGame, word + sizeof(char), p[0]);
+			return recursiveWordCheck(curGame, word + sizeof(char), p[0]);
 		}
 		else
 		{
