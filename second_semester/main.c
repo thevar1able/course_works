@@ -1,6 +1,6 @@
 #include "main.h"
 
-int main()
+int main(int argc, char *argv[])
 {
 	srand(time(NULL));
 	setlocale(LC_ALL, "");
