@@ -4,9 +4,9 @@
 #include <wchar.h>
 #include <locale.h>
 #include <time.h>
-#include <SDL/SDL.h>
-#include <SDL/SDL_ttf.h>
-#include <SDL/SDL_image.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
+#include <SDL_image.h>
 
 #define __DEBUG__ 0
 
@@ -51,7 +51,7 @@ struct wordGuess
 	struct point pos;
 };
 
-int main(void);
+int main(int argc, char *argv[]);
 
 struct game* initGame(int, int);
 void fillFirstWord(struct game*);
