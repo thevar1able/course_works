@@ -258,21 +258,22 @@ void BFSWalk(struct game* curGame, struct point p, wchar_t* tmpStr, wchar_t** co
 			if(pos < 200)wcscpy(combos[pos], tempString);
 			pos++;
 		}
-	}
-
-	for (i = 0; points[i].x != -1 && i < 5; ++i)
-	{
-		int j;
-		wchar_t tempString[40];
-		wcscpy(tempString, tmpStr);
-		for(j = 0; tempString[j] != L'\0'; ++j);
-		if(curGame->field[points[i].x][points[i].y] >= L'а' && curGame->field[points[i].x][points[i].y] <= L'я')
-		{
-			tempString[j] = curGame->field[points[i].x][points[i].y]; 
-			tempString[j + 1] = L'\0';
-		}
 		BFSWalk(curGame, points[i], tempString, combos);
 	}
+
+	// for (i = 0; points[i].x != -1 && i < 5; ++i)
+	// {
+	// 	int j;
+	// 	wchar_t tempString[40];
+	// 	wcscpy(tempString, tmpStr);
+	// 	for(j = 0; tempString[j] != L'\0'; ++j);
+	// 	if(curGame->field[points[i].x][points[i].y] >= L'а' && curGame->field[points[i].x][points[i].y] <= L'я')
+	// 	{
+	// 		tempString[j] = curGame->field[points[i].x][points[i].y]; 
+	// 		tempString[j + 1] = L'\0';
+	// 	}
+		
+	// }
 }
 
 struct point makePoint(int x, int y)
@@ -592,8 +593,8 @@ struct point recursiveWordCheck(struct game* curGame, wchar_t* word, struct poin
 		{
 			for (int i = 0; i < p_pos; ++i)
 			{
-				tempPoint = recursiveWordCheck(curGame, word + sizeof(char), p[i]);
 				// printf("dbg: %i, %i\n", tempPoint.y, tempPoint.x);
+				tempPoint = recursiveWordCheck(curGame, word + sizeof(char), p[i]);
 				if(tempPoint.x != -1) { return tempPoint; break; }
 			}
 		}
