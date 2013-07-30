@@ -1,6 +1,0 @@
-test: main
-	./main
-main: main.c main.h game.c graphic.c
-	gcc -std=c99 -Wmissing-prototypes -Wstrict-prototypes -O2 ${CFLAGS} `sdl-config --cflags --libs` -framework Cocoa -lSDL_image -lSDL_ttf main.c game.c graphic.c -o main
-clean:
-	rm main
